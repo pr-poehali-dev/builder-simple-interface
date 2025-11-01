@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -65,12 +65,24 @@ const projectTemplates = [
 ];
 
 export default function Index() {
-  const [activeLanguage, setActiveLanguage] = useState<keyof typeof codeExamples>('javascript');
-  const [code, setCode] = useState(codeExamples.javascript);
+  const [activeLanguage, setActiveLanguage] = useState<keyof typeof codeExamples>(() => {
+    const saved = localStorage.getItem('codebuilder-language');
+    return (saved as keyof typeof codeExamples) || 'javascript';
+  });
+  const [code, setCode] = useState(() => {
+    const saved = localStorage.getItem('codebuilder-code');
+    return saved || codeExamples.javascript;
+  });
+
+  useEffect(() => {
+    localStorage.setItem('codebuilder-language', activeLanguage);
+    localStorage.setItem(`codebuilder-code-${activeLanguage}`, code);
+  }, [activeLanguage, code]);
 
   const handleLanguageChange = (lang: keyof typeof codeExamples) => {
     setActiveLanguage(lang);
-    setCode(codeExamples[lang]);
+    const savedCode = localStorage.getItem(`codebuilder-code-${lang}`);
+    setCode(savedCode || codeExamples[lang]);
   };
 
   const handleExport = () => {
